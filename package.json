@@ -1,0 +1,37 @@
+{
+  "name": "pern-ecommerce",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "concurrently": "^6.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "description": "Simple E-commerce fullstack application with PostgreSQL, Express.js, React.js and Node.js",
+  "keywords": [
+    "postgresql",
+    "express.js",
+    "reactjs",
+    "nodejs",
+    "ecommerce",
+    "fullstack"
+  ],
+  "author": {
+    "name": "Martin Mkrtchyan",
+    "email": "ivistudia@gmail.com",
+    "url": "https://github.com/iviWebStudio/"
+  },
+  "homepage": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/iviWebStudio/pern-ecommerce/issues",
+    "email": "mmartin1@rambler.ru"
+  },
+  "repository": "github:iviWebStudio/pern-ecommerce"
+}
