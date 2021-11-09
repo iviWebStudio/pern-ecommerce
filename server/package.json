@@ -21,11 +21,12 @@
     "babel-eslint": "^10.1.0",
     "cross-env": "^7.0.3",
     "eslint": "^7.25.0",
-    "eslint-plugin-babel": "^5.3.1"
+    "eslint-plugin-babel": "^5.3.1",
+    "nodemon": "^2.0.15"
   },
   "scripts": {
     "start": "cross-env NODE_ENV=production node index",
-    "dev": "cross-env NODE_ENV=development node index",
+    "dev": "nodemon cross-env NODE_ENV=development node index",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
