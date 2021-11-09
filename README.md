@@ -71,7 +71,6 @@ server directory
 | `PGDB_HOST`           | Postgres host (default: localhost)                                            |
 | `PGDB_PASS`           | Postgre password                                                              |
 | `PGDB_NAME`           | Postgre DB name                                                               |
-| `PGDB_TEST`           | Postgre test DB name                                                          |
 | `PGDB_PORT`           | Postgre DB name                                                               |
 | `APP_PORT`            | Application Port - express server listens on this port (default 9000).        |
 | `JWT_SECRET`          | JWT access secret                                                             |
