@@ -1,0 +1,45 @@
+{
+  "name": "pern-ecommerce-client",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "web-vitals": "^1.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "description": "Application client/front side with react.js",
+  "author": {
+    "name": "Martin Mkrtchyan",
+    "email": "ivistudia@gmail.com",
+    "url": "https://github.com/iviWebStudio/"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/iviWebStudio/pern-ecommerce/issues",
+    "email": "mmartin1@rambler.ru"
+  },
+  "repository": "github:iviWebStudio/pern-ecommerce"
+}
