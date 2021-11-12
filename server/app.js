@@ -3,6 +3,7 @@ require("express-async-errors");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const compression = require("compression");
+const routes = require("./routes");
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(cors({credentials: true, origin: true}));
 app.use(express.json());
 app.use(compression());
 app.use(cookieParser());
+app.use("/api", routes);
 
 app.get("/", (req, res) =>
     res.send("<h1 style='text-align: center'>WELCOME TO THE PERN E-COMMERCE API</h1>")
