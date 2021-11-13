@@ -1,14 +1,17 @@
 const jwt = require("jsonwebtoken");
-const {ErrorHandler} = require("../helpers/logger");
+const {ErrorHandler} = require("../helpers/error");
 
 const checkToken = (req, res, next) => {
-    const token = req.header("auth-token");
-    if (!token) {
+    const bearerHeader = req.header("authorization");
+    if (!bearerHeader) {
         throw new ErrorHandler(401, "Token missing");
     }
 
     try {
-        req.user = jwt.verify(token, process.env.SECRET);
+        const bearer = bearerHeader.split(' ');
+        const bearerToken = bearer[1];
+
+        req.user = jwt.verify(bearerToken, process.env.JWT_SECRET);
         next();
     } catch (error) {
         throw new ErrorHandler(401, error.message || "Invalid Token");
