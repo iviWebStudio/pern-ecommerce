@@ -18,9 +18,8 @@ module.exports = (sequelize, Sequelize) => {
                 defaultValue: ""
             },
             sku: {
-                type: Sequelize.STRING(16),
+                type: Sequelize.STRING(16),//todo
                 defaultValue: "",
-                unique: true
             },
             price: {
                 type: Sequelize.FLOAT,
@@ -47,8 +46,8 @@ module.exports = (sequelize, Sequelize) => {
                 allowNull: true
             },
             stock: {
-                type: Sequelize.INTEGER,
-                allowNull: false
+                type: Sequelize.INTEGER,//todo
+                allowNull: true
             },
             total_sales: {
                 type: Sequelize.INTEGER,

@@ -5,28 +5,32 @@ const {
     findOne,
     update,
     deleteOne,
-    findBySku,
-    findByTitle,
+    search,
     findAllByStatus,
+    deleteAll,
 } = require("../controllers/product.controller");
 const checkToken = require("../middleware/checkToken");
 const checkAdmin = require("../middleware/checkAdmin");
 
-router
-    .route("/")
-    .get(findAll)
-    .post(checkToken, checkAdmin, add);
+router.route("/search")
+    .get(search)
+
+router.route("/status")
+    .get(findAllByStatus);
+router.route("/status/:status")
+    .get(findAllByStatus);
 
 router
-    .route("/:id")
+    .route("/:id/")
     .get(findOne)
-    .get(findBySku)
-    .get(findByTitle)
     .put(checkToken, checkAdmin, update)
     .delete(checkToken, checkAdmin, deleteOne);
 
-router.route("/status/:status")
-    .get(findAllByStatus);
+router
+    .route("/")
+    .get(findAll)
+    .post(checkToken, checkAdmin, add)
+    .delete(checkToken, checkAdmin, deleteAll);
 
 
 module.exports = router;

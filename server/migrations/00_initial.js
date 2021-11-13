@@ -74,7 +74,6 @@ module.exports = {
             sku: {
                 type: Sequelize.STRING(16),
                 defaultValue: "",
-                unique: true
             },
             price: {
                 type: Sequelize.FLOAT,
