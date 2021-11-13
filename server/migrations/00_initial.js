@@ -5,7 +5,8 @@ module.exports = {
     up: async (query) => {
         await query.createTable('users', {
             id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
                 allowNull: false,
                 primaryKey: true,
             },
@@ -56,7 +57,8 @@ module.exports = {
 
         await query.createTable('products', {
             id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
                 allowNull: false,
                 primaryKey: true,
             },
@@ -129,12 +131,13 @@ module.exports = {
 
         await query.createTable('orders', {
             id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
                 allowNull: false,
                 primaryKey: true,
             },
             user_id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 allowNull: false,
                 unique: false,
                 indexes: true,
@@ -167,7 +170,7 @@ module.exports = {
                 allowNull: false
             },
             order_id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 allowNull: false,
                 unique: false,
                 indexes: true,

@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
                 allowNull: false
             },
             order_id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 allowNull: false
             },
             quantity: {

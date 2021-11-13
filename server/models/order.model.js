@@ -3,12 +3,13 @@ module.exports = (sequelize, Sequelize) => {
         "order",
         {
             id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
                 allowNull: false,
                 primaryKey: true,
             },
             user_id: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 allowNull: false
             },
             status: {
