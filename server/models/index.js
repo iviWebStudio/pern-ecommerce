@@ -31,8 +31,9 @@ const umzug = new Umzug({
     })
 
 ;(async () => {
-    await umzug.up()
-    logger.info('All migrations performed successfully')
+    await umzug.up().then(() => {
+        logger.info('All migrations performed successfully')
+    })
 })();
 
 const db = {};
