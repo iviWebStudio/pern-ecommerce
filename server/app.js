@@ -4,6 +4,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const compression = require("compression");
 const routes = require("./routes");
+const {handleError} = require("./helpers/error");
+const invalidEndpoint = require("./middleware/invalidEndpoint");
 
 const app = express();
 
@@ -17,5 +19,7 @@ app.use("/api", routes);
 app.get("/", (req, res) =>
     res.send("<h1 style='text-align: center'>WELCOME TO THE PERN E-COMMERCE API</h1>")
 );
+app.use(invalidEndpoint);
+app.use(handleError);
 
 module.exports = app;
