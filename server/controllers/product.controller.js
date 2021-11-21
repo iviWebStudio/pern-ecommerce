@@ -1,19 +1,9 @@
 const db = require("../models");
+const {mapData} = require("../helpers/utils");
 const Op = db.Sequelize.Op;
 const Product = db.product;
-const dbFailureMessage = "Some error occurred with database:01."
-
-const mapProductData = inputObj => {
-    const product = {}
-    const allParams = ["title", "price", "description", "sku", "sale_price", "length", "width", "height", "weight", "stock", "total_sales", "status"];
-
-    Object.keys(inputObj).map(param => {
-        if (allParams.includes(param) && inputObj[param]) {
-            product[param] = inputObj[param];
-        }
-    })
-    return product;
-}
+const dbFailureMessage = "Some error occurred with products database."
+const allParams = ["title", "price", "description", "sku", "sale_price", "length", "width", "height", "weight", "stock", "total_sales", "status"];
 
 /**
  * Add a product in the database.
@@ -24,20 +14,18 @@ const mapProductData = inputObj => {
  */
 const add = async (req, res) => {
     if (!req.body.title) {
-        res.status(400).send({
+        return res.status(400).send({
             message: "product title is required!"
         });
-        return;
     }
-
+//todo check title and other uniqs
     if (!req.body.price) {
-        res.status(400).send({
+        return res.status(400).send({
             message: "product price is required!"
         });
-        return;
     }
 
-    const product = mapProductData(req.body);
+    const product = mapData(req.body, allParams);
 
     Product.create(product)
         .then(data => {
@@ -45,8 +33,7 @@ const add = async (req, res) => {
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || dbFailureMessage
+                message: err.message || dbFailureMessage
             });
         });
 };
@@ -60,11 +47,11 @@ const add = async (req, res) => {
  */
 const update = async (req, res) => {
     const id = req.params.id;
+    const product = mapData(req.body, allParams);
 
-    const product = mapProductData(req.body);
-    if (!Object.keys(product).length) {
-        res.status(500).send({
-            message: "No fields provided",
+    if (!product || !Object.keys(product).length) {
+        return res.status(500).send({
+            message: "No provided parameters!"
         });
     }
 
@@ -155,8 +142,7 @@ const findOne = async (req, res) => {
             res.status(200).send(product);
         }).catch(err => {
         res.status(500).send({
-            message:
-                err.message || dbFailureMessage
+            message: err.message || dbFailureMessage
         });
     });
 };
@@ -169,14 +155,17 @@ const findOne = async (req, res) => {
  * @returns {Promise<void>}
  */
 const findAll = async (req, res) => {
-    Product.findAll()
+    const {offset, limit} = req.body;
+    Product.findAll({
+        offset: offset || 0,
+        limit: limit || 100
+    })
         .then(product => {
             res.status(200).send(product);
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || dbFailureMessage
+                message: err.message || dbFailureMessage
             });
         });
 };
@@ -195,17 +184,20 @@ const findAllByStatus = async (req, res) => {
         });
     }
 
+    const {offset, limit} = req.body;
+
     Product.findAll({
         where: {
             status: req.params.status,
-        }
+        },
+        offset: offset || 0,
+        limit: limit || 100
     })
         .then(products => {
             res.status(200).send(products);
         }).catch(err => {
         res.status(500).send({
-            message:
-                err.message || dbFailureMessage
+            message: err.message || dbFailureMessage
         });
     });
 };
@@ -246,18 +238,20 @@ const search = async (req, res) => {
         return;
     }
 
+    const {offset, limit} = req.body;
     Product.findAll({
         where: {
             [Op.or]: args
-        }
+        },
+        offset: offset || 0,
+        limit: limit || 100
     })
         .then(products => {
             res.status(200).send(products);
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || dbFailureMessage
+                message: err.message || dbFailureMessage
             });
         });
 }

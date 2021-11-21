@@ -6,33 +6,35 @@ const {
     update,
     deleteOne,
     findAllForCurrentUser,
-    findAllByUserId,
-    findAllByStatus
+    findOrderForCurrentUser,
+    addOrderForCurrentUser,
+    deleteAll
 } = require("../controllers/order.controller");
 const checkToken = require("../middleware/checkToken");
 const checkAdmin = require("../middleware/checkAdmin");
 
 router
-    .route("/")
-    .get(checkToken, findAll)
-    .post(checkToken, add);
+    .use(checkToken);
 
 router
-    .route("/:id")
-    .get(findOne)
-    .put(update)
-    .delete(deleteOne);
-
-router
-    .route("/userid")
-    .get(checkAdmin, findAllByUserId);
+    .route("/my/:order_id")
+    .get(findOrderForCurrentUser);
 
 router
     .route("/my")
-    .get(checkToken, findAllForCurrentUser);
+    .get(findAllForCurrentUser)
+    .post(addOrderForCurrentUser);
 
 router
-    .route("/status/:status")
-    .get(checkAdmin, findAllByStatus);
+    .route("/:id")
+    .get(checkAdmin, findOne)
+    .put(checkAdmin, update)
+    .delete(checkAdmin, deleteOne);
+
+router
+    .route("/")
+    .get(checkAdmin, findAll)
+    .post(checkAdmin, add)
+    .delete(checkAdmin, deleteAll);
 
 module.exports = router;

@@ -5,9 +5,8 @@ const {
     findOne,
     update,
     getProfile,
-    findByLogin,
-    findByEmail,
-    findByRole
+    search,
+    findAllByRole
 } = require("../controllers/user.controller");
 const router = require("express").Router();
 const checkAdmin = require("../middleware/checkAdmin");
@@ -16,10 +15,12 @@ const checkToken = require("../middleware/checkToken");
 router
     .use(checkToken);
 
+router.route("/search/:key")
+    .get(search)
+
 router
-    .route("/")
-    .get(checkAdmin, findAll)
-    .post(checkAdmin, add);
+    .route("/roles/:role")
+    .get(checkAdmin, findAllByRole);
 
 router
     .route("/profile")
@@ -32,12 +33,9 @@ router
     .delete(deleteOne);
 
 router
-    .route("/search")
-    .get(checkAdmin, findByLogin)
-    .get(checkAdmin, findByEmail);
+    .route("/")
+    .get(checkAdmin, findAll)
+    .post(checkAdmin, add);
 
-router
-    .route("/roles")
-    .get(checkAdmin, findByRole);
 
 module.exports = router;
