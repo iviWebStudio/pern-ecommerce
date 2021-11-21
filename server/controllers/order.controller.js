@@ -1,7 +1,6 @@
 const db = require("../models");
-const {mapData, validateOrderItems, parseOrderItems, validateOrderItem} = require("../helpers/utils");
-const {validateRequest} = require("../helpers/validation");
-const {or} = require("sequelize");
+const {mapData} = require("../helpers/utils");
+const {validateRequest, validateOrderItem} = require("../helpers/validation");
 const Op = db.Sequelize.Op;
 const Order = db.order;
 const User = db.user;

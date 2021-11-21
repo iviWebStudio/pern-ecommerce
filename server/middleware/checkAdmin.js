@@ -1,12 +1,11 @@
 const {ErrorHandler} = require("../helpers/error");
 
 const checkAdmin = (req, res, next) => {
-    return next();
-    const {role} = req.user;
-    if (role && role.includes("admin")) {
+    const {isAdmin} = req.user;
+    if (isAdmin) {
         req.user = {
             ...req.user,
-            role,
+            isAdmin: true,
         };
         return next();
     } else {

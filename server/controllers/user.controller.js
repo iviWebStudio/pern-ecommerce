@@ -1,5 +1,6 @@
 const db = require("../models");
 const {mapData, hashPassword} = require("../helpers/utils");
+const {isEmail} = require("../helpers/validation");
 const Op = db.Sequelize.Op;
 const User = db.user;
 const dbFailureMessage = "Some error occurred with users database."
@@ -25,7 +26,7 @@ const add = async (req, res) => {
         });
     }
 
-    if (!req.body.email) {
+    if (!req.body.email || !isEmail(req.body.email)) {
         res.status(400).send({
             message: "user email is required!"
         });

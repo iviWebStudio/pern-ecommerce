@@ -83,6 +83,42 @@ const validateRequestOrderBy = (orderBy = "", orderByOptions = []) => {
     return orderBy;
 }
 
+const validateOrderItem = orderItem => {
+    if (typeof orderItem !== "object") {
+        throw new Error("invalid orderItem object passed.")
+    }
+
+    if (!orderItem.title) {
+        throw new Error("order item title required.")
+    }
+
+    if (!orderItem.quantity) {
+        throw new Error("order item quantity required.")
+    }
+
+    if (!orderItem.price) {
+        throw new Error("order item price required.")
+    }
+
+    if (!orderItem.sale_price) {
+        orderItem.sale_price = orderItem.price;
+    }
+
+    orderItem.total = orderItem.quantity * orderItem.sale_price;
+}
+
+const isEmail = email => {
+    if (typeof email !== "string") {
+        return false;
+    }
+
+    if (email.length < 6) {
+        return false;
+    }
+
+    return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email.toLowerCase());
+}
+
 
 module.exports = {
     validateRequest: {
@@ -90,5 +126,7 @@ module.exports = {
         limit: validateRequestLimit,
         order: validateRequestOrder,
         orderBy: validateRequestOrderBy,
-    }
+    },
+    isEmail,
+    validateOrderItem,
 }
