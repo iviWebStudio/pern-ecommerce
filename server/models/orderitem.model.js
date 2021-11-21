@@ -27,7 +27,8 @@ module.exports = (sequelize, Sequelize) => {
                 allowNull: false
             },
             sale_price: {
-                type: Sequelize.FLOAT
+                type: Sequelize.FLOAT,
+                allowNull: false
             },
             total: {
                 type: Sequelize.FLOAT,
@@ -36,12 +37,8 @@ module.exports = (sequelize, Sequelize) => {
         },
         {
             tableName: "orderitems",
+            modelName: "orderitem",
+            underscored: true,
             timestamps: false,
-            indexes: [
-                {
-                    unique: false,
-                    fields: ["order_id"]
-                }
-            ]
         });
 };

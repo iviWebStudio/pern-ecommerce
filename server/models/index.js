@@ -34,15 +34,25 @@ const umzug = new Umzug({
     await umzug.up().then(() => {
         logger.info('All migrations performed successfully')
     })
+
 })();
 
-const db = {};
 
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
-db.user = require("./user.model")(sequelize, Sequelize);
-db.product = require("./product.model")(sequelize, Sequelize);
-db.order = require("./order.model")(sequelize, Sequelize);
-db.orderitem = require("./orderitem.model")(sequelize, Sequelize);
+const User = require("./user.model")(sequelize, Sequelize);
+const Product = require("./product.model")(sequelize, Sequelize);
+const Order = require("./order.model")(sequelize, Sequelize);
+const OrderItem = require("./orderitem.model")(sequelize, Sequelize);
 
-module.exports = db;
+User.hasMany(Order, {as: "Orders"});
+Order.belongsTo(User);
+Order.hasMany(OrderItem, {as: "OrderItems"})
+OrderItem.belongsTo(Order)
+
+module.exports = {
+    Sequelize: Sequelize,
+    sequelize: sequelize,
+    user: User,
+    product: Product,
+    order: Order,
+    orderitem: OrderItem,
+};

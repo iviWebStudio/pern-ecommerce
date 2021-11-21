@@ -15,19 +15,25 @@ module.exports = (sequelize, Sequelize) => {
             status: {
                 type: Sequelize.ENUM("pending", "process", "completed"),
                 allowNull: false,
-                defaultValue: "pending"
-            }
+                defaultValue: "pending",
+                unique: false,
+                indexes: true
+            },
+            sale_total: {
+                type: Sequelize.FLOAT,
+                allowNull: false
+            },
+            total: {
+                type: Sequelize.FLOAT,
+                allowNull: false
+            },
         },
         {
             tableName: "orders",
+            modelName: "order",
+            underscored: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
             timestamps: true,
-            indexes: [
-                {
-                    unique: false,
-                    fields: ["user_id", "status"]
-                }
-            ]
         });
 };

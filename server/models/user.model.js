@@ -12,6 +12,7 @@ module.exports = (sequelize, Sequelize) => {
                 type: Sequelize.STRING(64),
                 allowNull: false,
                 unique: true,
+                indexes: true,
                 validate: {
                     len: [6, 63]
                 }
@@ -27,9 +28,18 @@ module.exports = (sequelize, Sequelize) => {
                 type: Sequelize.STRING(64),
                 allowNull: false,
                 unique: true,
+                indexes: true,
                 validate: {
                     isEmail: true,
                 }
+            },
+            first_name: {
+                type: Sequelize.STRING(64),
+                defaultValue: ""
+            },
+            last_name: {
+                type: Sequelize.STRING(64),
+                defaultValue: ""
             },
             phone: {
                 type: Sequelize.STRING(32),
@@ -46,6 +56,8 @@ module.exports = (sequelize, Sequelize) => {
         },
         {
             tableName: "users",
+            modelName: "user",
+            underscored: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
             timestamps: true,

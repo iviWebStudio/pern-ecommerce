@@ -1,5 +1,7 @@
 const {Sequelize} = require('sequelize');
-
+//todo check all
+//todo foreign keys
+//todo separate all
 module.exports = {
     // `query` was passed in the `index.js` file
     up: async (query) => {
@@ -14,6 +16,7 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
                 unique: true,
+                indexes: true,
                 validate: {
                     len: [6, 63]
                 }
@@ -29,9 +32,18 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
                 unique: true,
+                indexes: true,
                 validate: {
                     isEmail: true,
                 }
+            },
+            first_name: {
+                type: Sequelize.STRING(64),
+                defaultValue: ""
+            },
+            last_name: {
+                type: Sequelize.STRING(64),
+                defaultValue: ""
             },
             phone: {
                 type: Sequelize.STRING(32),
@@ -101,22 +113,22 @@ module.exports = {
             },
             stock: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
                 unique: false,
-                indexes: true,
+                indexes: true
             },
             total_sales: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 defaultValue: 0,
                 unique: false,
-                indexes: true,
+                indexes: true
             },
             status: {
                 type: Sequelize.ENUM("stock", "low", "out"),
                 defaultValue: "stock",
                 unique: false,
-                indexes: true,
+                indexes: true
             },
             created_at: {
                 type: Sequelize.DATE,
@@ -137,16 +149,22 @@ module.exports = {
             },
             user_id: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
-                unique: false,
-                indexes: true,
+                allowNull: false
             },
             status: {
                 type: Sequelize.ENUM("pending", "process", "completed"),
                 allowNull: false,
                 defaultValue: "pending",
                 unique: false,
-                indexes: true,
+                indexes: true
+            },
+            sale_total: {
+                type: Sequelize.FLOAT,
+                allowNull: false
+            },
+            total: {
+                type: Sequelize.FLOAT,
+                allowNull: false
             },
             created_at: {
                 type: Sequelize.DATE,
@@ -170,9 +188,7 @@ module.exports = {
             },
             order_id: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
-                unique: false,
-                indexes: true,
+                allowNull: false
             },
             quantity: {
                 type: Sequelize.INTEGER,
@@ -186,7 +202,8 @@ module.exports = {
                 allowNull: false
             },
             sale_price: {
-                type: Sequelize.FLOAT
+                type: Sequelize.FLOAT,
+                allowNull: false
             },
             total: {
                 type: Sequelize.FLOAT,

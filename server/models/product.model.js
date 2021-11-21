@@ -18,7 +18,7 @@ module.exports = (sequelize, Sequelize) => {
                 defaultValue: ""
             },
             sku: {
-                type: Sequelize.STRING(16),//todo
+                type: Sequelize.STRING(16),
                 defaultValue: "",
             },
             price: {
@@ -46,29 +46,31 @@ module.exports = (sequelize, Sequelize) => {
                 allowNull: true
             },
             stock: {
-                type: Sequelize.INTEGER,//todo
-                allowNull: true
+                type: Sequelize.INTEGER,
+                allowNull: true,
+                unique: false,
+                indexes: true
             },
             total_sales: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
-                defaultValue: 0
+                defaultValue: 0,
+                unique: false,
+                indexes: true
             },
             status: {
                 type: Sequelize.ENUM("stock", "low", "out"),
                 defaultValue: "stock",
+                unique: false,
+                indexes: true
             }
         },
         {
             tableName: "products",
+            modelName: "product",
+            underscored: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
             timestamps: true,
-            indexes: [
-                {
-                    unique: false,
-                    fields: ["stock", "total_sales", "status"]
-                }
-            ]
         });
 };
