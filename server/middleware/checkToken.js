@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 const {ErrorHandler} = require("../helpers/error");
 
 const checkToken = (req, res, next) => {
