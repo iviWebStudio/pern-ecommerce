@@ -3,17 +3,18 @@
  * @param offset
  * @returns {number}
  */
+const {ErrorHandler} = require("./error");
 const validateRequestOffset = offset => {
     if (!offset) {
         return 0;
     }
 
     if (typeof offset !== "number") {
-        throw new Error("offset should be numeric.")
+        throw new ErrorHandler(400, "offset should be numeric.")
     }
 
     if (offset < 0) {
-        throw new Error("offset should be numeric.")
+        throw new ErrorHandler(400, "offset should be numeric.")
     }
 
     return offset
@@ -30,15 +31,15 @@ const validateRequestLimit = limit => {
     }
 
     if (typeof limit !== "number") {
-        throw new Error("limit should be numeric.")
+        throw new ErrorHandler(400, "limit should be numeric.")
     }
 
     if (limit < 0) {
-        throw new Error("limit should be numeric.")
+        throw new ErrorHandler(400, "limit should be numeric.")
     }
 
     if (limit > 1000) {
-        throw new Error("limit too big.")
+        throw new ErrorHandler(400, "limit too big.")
     }
 
     return limit
@@ -55,7 +56,7 @@ const validateRequestOrder = order => {
     }
 
     if (["DESC", "ASC"].includes(order.toUpperCase())) {
-        throw new Error("order should be ASC or DESC.")
+        throw new ErrorHandler(400, "order should be ASC or DESC.")
     }
 
     return order.toUpperCase();
@@ -73,11 +74,11 @@ const validateRequestOrderBy = (orderBy = "", orderByOptions = []) => {
     }
 
     if (!Array.isArray(orderByOptions) || !orderByOptions.length) {
-        throw new Error("no available order_by parameter.")
+        throw new ErrorHandler(400, "no available order_by parameter.")
     }
 
     if (orderByOptions.includes(orderBy)) {
-        throw new Error("invalid order_by parameter.")
+        throw new ErrorHandler(400, "invalid order_by parameter.")
     }
 
     return orderBy;
@@ -85,19 +86,19 @@ const validateRequestOrderBy = (orderBy = "", orderByOptions = []) => {
 
 const validateOrderItem = orderItem => {
     if (typeof orderItem !== "object") {
-        throw new Error("invalid orderItem object passed.")
+        throw new ErrorHandler(400, "invalid orderItem object passed.")
     }
 
     if (!orderItem.title) {
-        throw new Error("order item title required.")
+        throw new ErrorHandler(400, "order item title required.")
     }
 
     if (!orderItem.quantity) {
-        throw new Error("order item quantity required.")
+        throw new ErrorHandler(400, "order item quantity required.")
     }
 
     if (!orderItem.price) {
-        throw new Error("order item price required.")
+        throw new ErrorHandler(400, "order item price required.")
     }
 
     if (!orderItem.sale_price) {

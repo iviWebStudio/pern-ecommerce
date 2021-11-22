@@ -6,7 +6,6 @@ const {
     update,
     getProfile,
     search,
-    findAllByRole
 } = require("../controllers/user.controller");
 const router = require("express").Router();
 const checkAdmin = require("../middleware/checkAdmin");
@@ -17,10 +16,6 @@ router
 
 router.route("/search/:key")
     .get(search)
-
-router
-    .route("/roles/:role")
-    .get(checkAdmin, findAllByRole);
 
 router
     .route("/profile")

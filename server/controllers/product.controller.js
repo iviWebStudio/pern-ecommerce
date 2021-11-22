@@ -1,9 +1,9 @@
 const db = require("../models");
 const {mapData} = require("../helpers/utils");
+const {getValidParams} = require("../helpers/services");
 const Op = db.Sequelize.Op;
 const Product = db.product;
 const dbFailureMessage = "Some error occurred with products database."
-const allParams = ["title", "price", "description", "sku", "sale_price", "length", "width", "height", "weight", "stock", "total_sales", "status"];
 
 /**
  * Add a product in the database.
@@ -25,7 +25,7 @@ const add = async (req, res) => {
         });
     }
 
-    const product = mapData(req.body, allParams);
+    const product = mapData(req.body, getValidParams.product);
 
     Product.create(product)
         .then(data => {
@@ -47,7 +47,7 @@ const add = async (req, res) => {
  */
 const update = async (req, res) => {
     const id = req.params.id;
-    const product = mapData(req.body, allParams);
+    const product = mapData(req.body, getValidParams.product);
 
     if (!product || !Object.keys(product).length) {
         return res.status(500).send({

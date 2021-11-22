@@ -1,10 +1,113 @@
 const db = require("../models");
 const {mapData, hashPassword} = require("../helpers/utils");
-const {isEmail} = require("../helpers/validation");
+const {getValidParams, addUserHandler, getOrderingValidParams} = require("../helpers/services");
+const {validateRequest, isEmail} = require("../helpers/validation");
+const {ErrorHandler} = require("../helpers/error");
 const Op = db.Sequelize.Op;
 const User = db.user;
 const dbFailureMessage = "Some error occurred with users database."
-const allParams = ["login", "password", "email", "first_name", "last_name", "phone", "role", "order_count"];
+
+/**
+ *
+ * @param params
+ * @returns {{}}
+ */
+const validateRequestFilterParams = params => {
+    const {
+        login,
+        email,
+        first_name,
+        last_name,
+        phone,
+        role,
+        order_count,
+        date_after,
+        date_before,
+        order_by,
+        order,
+        offset,
+        limit,
+    } = params;
+
+    const args = {};
+
+    args.offset = validateRequest.offset(offset);
+    args.limit = validateRequest.limit(limit);
+
+    if (order_by || order) {
+        const validatedOrderBy = validateRequest.orderBy(order_by, getOrderingValidParams.user);
+        const validatedOrder = validateRequest.order(order);
+
+        args.order = validatedOrderBy === "created_at" || validatedOrderBy === "updated_at" ?
+            [Order, validatedOrderBy, validatedOrder] :
+            [validatedOrderBy, validatedOrder];
+    }
+
+    const createdAt = {}
+    if (date_after) {
+        const after = new Date(date_after);
+        if (isNaN(after.valueOf())) {
+            throw new ErrorHandler(400, "Invalid date_after passed.")
+        }
+
+        Object.assign(createdAt, {
+            [Op.gt]: after
+        })
+    }
+
+    if (date_before) {
+        const before = new Date(date_before).valueOf();
+        if (isNaN(before.valueOf())) {
+            throw new ErrorHandler(400, "Invalid date_before passed.")
+        }
+
+        Object.assign(createdAt, {
+            [Op.lt]: before
+        })
+    }
+
+    const where = {};
+    if (createdAt
+        && Object.keys(createdAt).length === 0
+        && Object.getPrototypeOf(createdAt) === Object.prototype) {
+        where.created_at = createdAt;
+    }
+
+    if (login) {
+        where.login = {[Op.like]: `%${login}%`}
+    }
+
+    if (email) {
+        if (!isEmail(email)) {
+            throw new ErrorHandler(400, "invalid email!")
+        }
+        where.email = {[Op.like]: `%${email}%`}
+    }
+
+    if (first_name) {
+        where.first_name = {[Op.like]: `%${first_name}%`}
+    }
+
+    if (last_name) {
+        where.last_name = {[Op.like]: `%${last_name}%`}
+    }
+
+    if (phone) {
+        where.phone = {[Op.like]: `%${phone}%`}
+    }
+
+    if (role) {
+        where.role = role;
+    }
+    if (order_count) {
+        where.order_count = order_count;
+    }
+
+    if (Object.keys(where).length) {
+        args.where = where
+    }
+    return args;
+}
 
 /**
  * Add an user in the database.
@@ -14,52 +117,8 @@ const allParams = ["login", "password", "email", "first_name", "last_name", "pho
  * @returns {Promise<void>}
  */
 const add = async (req, res) => {
-    if (!req.body.login) {
-        return res.status(400).send({
-            message: "user login is required!"
-        });
-    }
-
-    if (req.body.login.length < 6 || req.body.login.length > 63) {
-        return res.status(400).send({
-            message: "user login must contain 6-63 characters!"
-        });
-    }
-
-    if (!req.body.email || !isEmail(req.body.email)) {
-        res.status(400).send({
-            message: "user email is required!"
-        });
-        return;
-    }
-
-    if (!req.body.password) {
-        res.status(400).send({
-            message: "user password is required!"
-        });
-        return;
-    }
-
-    if (req.body.password.length < 6 || req.body.password.length > 63) {
-        return res.status(400).send({
-            message: "user password must contain 6-63 characters!"
-        });
-    }
-
-    //todo check userename  and email exists
-
-    const user = mapData(req.body, allParams);
-    user.password = await hashPassword(user.password)
-
-    User.create(user)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || dbFailureMessage
-            });
-        });
+    const user = await addUserHandler(req.body);
+    return res.send(user);
 };
 
 /**
@@ -71,7 +130,7 @@ const add = async (req, res) => {
  */
 const update = async (req, res) => {
     const id = req.params.id;
-    const user = mapData(req.body, allParams);
+    const user = mapData(req.body, getValidParams.user);
 
     if (!user || !Object.keys(user).length) {
         return res.status(500).send({
@@ -160,12 +219,7 @@ const findOne = async (req, res) => {
  * @returns {Promise<void>}
  */
 const findAll = async (req, res) => {
-    const {offset, limit} = req.body;
-
-    User.findAll({
-        offset: offset || 0,
-        limit: limit || 100
-    })
+    User.findAll(validateRequestFilterParams(req.body))
         .then(user => {
             res.status(200).send(user);
         })
@@ -174,83 +228,6 @@ const findAll = async (req, res) => {
                 message: err.message || dbFailureMessage
             });
         });
-};
-
-/**
- * Find user by login.
- *
- * @returns {Promise<void>}
- */
-const findByLogin = async (login) => {
-    User.findAll({
-        where: {
-            login: login,
-        },
-        limit: 1
-    })
-        .then(user => {
-            return user.shift()
-        }).catch(() => {
-        return {}
-    });
-};
-
-/**
- * Find user by email.
- *
- * @returns {Promise<void>}
- */
-const findByEmail = async (email) => {
-    User.findAll({
-        where: {
-            email: email,
-        },
-        limit: 1
-    })
-        .then(user => {
-            return user.shift()
-        }).catch(() => {
-        return {}
-    });
-};
-
-/**
- * Find users with role.
- *
- * @param req
- * @param res
- * @returns {Promise<void>}
- */
-const findAllByRole = async (req, res) => {
-    const {role} = req.params;
-
-    if (!role) {
-        return res.status(500).send({
-            message: "role param required."
-        });
-    }
-
-    if (["admin", "customer"].indexOf(role) === -1) {
-        return res.status(500).send({
-            message: "role is not exists."
-        });
-    }
-    const {offset, limit} = req.body;
-
-    User.findAll({
-        where: {
-            role: role,
-        },
-        offset: offset || 0,
-        limit: limit || 100
-    })
-        .then(user => {
-            res.status(200).send(user);
-        }).catch(err => {
-        res.status(500).send({
-            message: err.message || dbFailureMessage
-        });
-    });
 };
 
 /**
@@ -317,9 +294,6 @@ module.exports = {
     deleteOne,
     findOne,
     findAll,
-    findByLogin,
-    findByEmail,
-    findAllByRole,
     getProfile,
     search
 };

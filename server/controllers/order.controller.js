@@ -1,20 +1,13 @@
 const db = require("../models");
 const {mapData} = require("../helpers/utils");
 const {validateRequest, validateOrderItem} = require("../helpers/validation");
+const {getValidParams, getOrderingValidParams} = require("../helpers/services");
+const {ErrorHandler} = require("../helpers/error");
 const Op = db.Sequelize.Op;
 const Order = db.order;
 const User = db.user;
 const OrderItem = db.orderitem;
 const dbFailureMessage = "Some error occurred with orders database."
-const allParams = ["user_id", "status", "items", "sale_total", "total"];
-const allItemParams = ["title", "order_id", "quantity", "price", "sale_price", "total"];
-const orderByOptions = [
-    "id",
-    "user_id",
-    "status",
-    "created_at",
-    "updated_at"
-]
 
 const validateRequestFilterParams = params => {
     const {status, order_id, user_id, date_after, date_before, order_by, order, offset, limit,} = params;
@@ -25,7 +18,7 @@ const validateRequestFilterParams = params => {
     args.limit = validateRequest.limit(limit);
 
     if (order_by || order) {
-        const validatedOrderBy = validateRequest.orderBy(order_by, orderByOptions);
+        const validatedOrderBy = validateRequest.orderBy(order_by, getOrderingValidParams.order);
         const validatedOrder = validateRequest.order(order);
 
         args.order = validatedOrderBy === "created_at" || validatedOrderBy === "updated_at" ?
@@ -37,10 +30,10 @@ const validateRequestFilterParams = params => {
     if (date_after) {
         const after = new Date(date_after);
         if (isNaN(after.valueOf())) {
-            throw new Error("Invalid date_after passed.")
+            throw new ErrorHandler(400, "Invalid date_after passed.")
         }
 
-        Object.prototype.assign(createdAt, {
+        Object.assign(createdAt, {
             [Op.gt]: after
         })
     }
@@ -48,10 +41,10 @@ const validateRequestFilterParams = params => {
     if (date_before) {
         const before = new Date(date_before);
         if (isNaN(before.valueOf())) {
-            throw new Error("Invalid date_before passed.")
+            throw new ErrorHandler(400, "Invalid date_before passed.")
         }
 
-        Object.prototype.assign(createdAt, {
+        Object.assign(createdAt, {
             [Op.lt]: before
         })
     }
@@ -63,21 +56,21 @@ const validateRequestFilterParams = params => {
     const where = {};
     if (user_id) {
         if (parseInt(user_id) !== +user_id || user_id < 0) {
-            throw new Error("invalid user_id!")
+            throw new ErrorHandler(400, "invalid user_id!")
         }
         where.user_id = user_id;
     }
 
     if (order_id) {
         if (parseInt(order_id) !== +order_id || order_id < 0) {
-            throw new Error("invalid order_id!")
+            throw new ErrorHandler(400, "invalid order_id!")
         }
         where.id = order_id;
     }
 
     if (status) {
         if (!["pending", "process", "completed"].includes(status)) {
-            throw new Error("invalid status passed.")
+            throw new ErrorHandler(400, "invalid status passed.")
         }
         where.status = status;
     }
@@ -89,17 +82,22 @@ const validateRequestFilterParams = params => {
 }
 
 const updateUserOrderCountHandler = async (userId, count, transaction) => {
-    const user = await User.findByPk(userId);
-    const {order_count} = user;
-    const updatedCount = +order_count + count;
-    return await User.update({
-        order_count: updatedCount
-    }, {
-        where: {
-            id: user.id
-        },
-        transaction: transaction
-    })
+    try {
+        const user = await User.findByPk(userId);
+        const {order_count} = user;
+        const updatedCount = +order_count + count;
+
+        return await User.update({
+            order_count: updatedCount
+        }, {
+            where: {
+                id: user.id
+            },
+            transaction: transaction
+        })
+    } catch (e) {
+        throw new ErrorHandler(400, e.message || e)
+    }
 }
 
 /**
@@ -111,16 +109,20 @@ const updateUserOrderCountHandler = async (userId, count, transaction) => {
  */
 const updateOrderItemHandler = async (orderItem, orderId, transaction) => {
     const id = orderItem.id;
-    const mapped = mapData(orderItem, allItemParams);
+    const mapped = mapData(orderItem, getValidParams.orderItems);
     delete mapped.order_id;
 
-    return OrderItem.update(mapped, {
-        where: {
-            id: id,
-            order_id: orderId
-        },
-        transaction: transaction
-    })
+    try {
+        return OrderItem.update(mapped, {
+            where: {
+                id: id,
+                order_id: orderId
+            },
+            transaction: transaction
+        })
+    } catch (e) {
+        throw new ErrorHandler(400, e.message || e)
+    }
 }
 
 /**
@@ -141,8 +143,8 @@ const updateOrderHandler = async (itemsData, orderId, transaction) => {
 
     const promises = []
 
-    try {
-        for (const orderItem of itemsData) {
+    for (const orderItem of itemsData) {
+        try {
             const id = orderItem.id;
             await updateOrderItemHandler(orderItem, orderId, transaction).then(num => {
                 if (!num.length || !num.includes(1)) {
@@ -154,10 +156,11 @@ const updateOrderHandler = async (itemsData, orderId, transaction) => {
                 .catch(err => {
                     promises.push(Promise.reject(err.message))
                 })
+        } catch (err) {
+            promises.push(Promise.reject(err.message))
         }
-    } catch (err) {
-        promises.push(Promise.reject(err.message))
     }
+
     return Promise.all(promises)
 }
 
@@ -169,7 +172,7 @@ const updateOrderHandler = async (itemsData, orderId, transaction) => {
  * @returns {Promise<void>}
  */
 const add = async (req, res) => {
-    const orderData = mapData(req.body, allParams);
+    const orderData = mapData(req.body, getValidParams.order);
 
     if (!orderData.user_id) {
         return res.status(500).send({
@@ -208,7 +211,7 @@ const add = async (req, res) => {
 
             orderItems.map((orderItem, orderItemIndex) => {
                 orderItem.order_id = order.id;
-                orderItem = mapData(orderItem, allItemParams);
+                orderItem = mapData(orderItem, getValidParams.orderItems);
                 validateOrderItem(orderItem)
                 orderItems[orderItemIndex] = orderItem;
             })
@@ -242,7 +245,7 @@ const add = async (req, res) => {
  */
 const update = async (req, res) => {
     const id = req.params.id;
-    const orderData = mapData(req.body, allParams);
+    const orderData = mapData(req.body, getValidParams.order);
     delete orderData.user_id;
 
     if (!orderData || !Object.keys(orderData).length) {
@@ -269,7 +272,7 @@ const update = async (req, res) => {
             return await updateOrderHandler(items, id, t).then(() => {
                 return id;
             }).catch((e) => {
-                throw new Error(e)
+                throw new ErrorHandler(400, e)
             })
 
         });
@@ -302,29 +305,28 @@ const deleteOne = async (req, res) => {
     const id = req.params.id;
 
     try {
-        await db.sequelize.transaction(async t =>
-            await Order.destroy({
+        await db.sequelize.transaction(async t => {
+            const order = await Order.findByPk(id);
+
+            const deleted = await Order.destroy({
                 where: {id: id},
                 transaction: t
-            })
-                .then(num => {
-                    if (num.length && num.includes(1) || num === 1) {
-                        return id;
-                    }
-                    throw new Error("nothing deleted")
-                })
-                .catch(err => {
-                    throw new Error(err.message)
-                }));
+            });
 
+            if ((!deleted.length || !deleted.includes(1)) && deleted !== 1) {
+                throw new Error("nothing deleted")
+            }
+
+            await updateUserOrderCountHandler(order.user_id, -1, t);
+
+            return id;
+        });
 
         return res.send({
             message: "Order was deleted successfully!"
         });
     } catch (err) {
-        return res.status(500).send({
-            message: err.message || dbFailureMessage
-        });
+        throw new ErrorHandler(501, err.message ? err.message : dbFailureMessage);
     }
 };
 
@@ -388,6 +390,7 @@ const findOne = async (req, res) => {
                     message: "order not found"
                 });
             }
+            // noinspection JSUnresolvedFunction
             const items = await order.getOrderItems();
             res.status(200).send({
                 id: order.id,
@@ -461,9 +464,13 @@ const findAllForCurrentUser = async (req, res) => {
  * @returns {Promise<void>}
  */
 const findOrderForCurrentUser = async (req, res) => {
-    const args = {...req.body, order_id: req.params.order_id, user_id: req.user.id}
     try {
-        await Order.findOne(validateRequestFilterParams(args))
+        await Order.findOne({
+            where: {
+                order_id: req.params.order_id,
+                user_id: req.user.id
+            }
+        })
             .then(order => {
                 if (!order) {
                     throw new Error("order not found!")
@@ -474,9 +481,7 @@ const findOrderForCurrentUser = async (req, res) => {
                 throw new Error(err)
             });
     } catch (e) {
-        res.status(500).send({
-            message: e.message || dbFailureMessage
-        });
+        new ErrorHandler(400, e.message || dbFailureMessage)
     }
 };
 

@@ -1,56 +1,114 @@
-const db = require("../models");
-const jwt = require("jsonwebtoken");
-const {isEmail} = require("../helpers/validation");
+const {
+    refreshTokenHandler,
+    addUserHandler,
+    extendTokenHandler,
+    checkUserLogin,
+    generateRefreshToken
+} = require("../helpers/services");
+const {ErrorHandler} = require("../helpers/error");
 const {comparePassword} = require("../helpers/utils");
 
-const User = db.user;
-
-const getUserBy = async (field, value) => {
-    const args = {};
-    args[field] = value;
-    const user = await User.findOne({
-        where: args
+/**
+ *
+ * @param user
+ * @param res
+ * @param status
+ * @returns {Promise<void>}
+ */
+const generateTokenHandler = async (user, res, status = 200) => {
+    const token = await extendTokenHandler({
+        username: user.login,
+        isAdmin: user.role === "admin",
+        id: user.id
     });
-    return user || false;
+
+    const refreshToken = await refreshTokenHandler({
+        id: user.id,
+        username: user.user,
+        isAdmin: user.role === "admin",
+    });
+
+    res.header("Auth-token", token);
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "development" ? true : "none",
+        secure: process.env.NODE_ENV !== "development",
+    });
+
+    res.status(status).json({
+        token: token,
+        user: user.id,
+    });
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
 const login = async (req, res) => {
     const {login, password} = req.body;
 
     if (!login || !password) {
-        return res.status(500).send({
-            message: "login and password required"
-        })
+        throw new ErrorHandler(500, "login and password required");
     }
 
-    const userExists = isEmail(login) ? await getUserBy("email", login.toLowerCase()) : await getUserBy("login", login);
+    const user = await checkUserLogin(login);
 
-    if (!userExists) {
-        return res.status(401).send({
-            message: "unknown user login or invalid password."
-        })
+    if (!user) {
+        throw new ErrorHandler(401, "unknown user login or invalid password.")
     }
 
-    const isPasswordValid = await comparePassword(password, userExists.password);
+    const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) {
-        return res.status(401).send({
-            message: "invalid password or unknown user login."
-        })
+        throw new ErrorHandler(401, "invalid password or unknown user login.")
     }
 
-    const token = jwt.sign({
-        username: userExists.login,
-        isAdmin: userExists.role === "admin",
-        id: 1
-    }, process.env.JWT_SECRET, {expiresIn: 60 * 60});
-
-    res.status(200).send({
-        token: token
-    });
+    await generateTokenHandler(user, res, 200)
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
+const signup = async (req, res) => {
+
+    const user = await addUserHandler(req.body);
+
+    await generateTokenHandler(user, res, 201)
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
+const refreshToken = async (req, res) => {
+    if (!req.cookies.refreshToken) {
+        throw new ErrorHandler(401, "Token missing");
+    }
+
+    const tokens = await generateRefreshToken(
+        req.cookies.refreshToken
+    );
+
+    res.header("Auth-token", tokens.token);
+    res.cookie("refreshToken", tokens.refreshToken, {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "development" ? true : "none",
+        secure: process.env.NODE_ENV === "production",
+    });
+    res.json(tokens);
+};
 
 module.exports = {
-    login
+    login,
+    signup,
+    refreshToken
 };

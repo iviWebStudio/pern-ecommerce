@@ -1,8 +1,8 @@
 const router = require("express").Router();
-const order = require("./orders");
-const product = require("./products");
-const users = require("./users");
 const auth = require("./auth");
+const users = require("./users");
+const product = require("./products");
+const order = require("./orders");
 
 router.use("/auth", auth);
 router.use("/users", users);

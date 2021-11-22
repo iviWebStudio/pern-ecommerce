@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const {ErrorHandler} = require("./error");
 
 const mapData = (inputObj, allParams) => {
     const data = {}
@@ -12,12 +13,21 @@ const mapData = (inputObj, allParams) => {
 }
 
 const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt();
-    return await bcrypt.hash(password, salt);
+    try {
+        const salt = await bcrypt.genSalt();
+        return await bcrypt.hash(password, salt);
+    } catch (e) {
+        throw new ErrorHandler(409, e)
+    }
 };
 
-const comparePassword = async (password, passwordHash) =>
-    await bcrypt.compare(password, passwordHash);
+const comparePassword = async (password, passwordHash) => {
+    try {
+        return await bcrypt.compare(password, passwordHash)
+    } catch (e) {
+        throw new ErrorHandler(409, e)
+    }
+}
 
 const parseOrderItems = (items, orderId) => {
     items.forEach((orderItem) => {
