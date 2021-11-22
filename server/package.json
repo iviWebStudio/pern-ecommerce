@@ -18,7 +18,9 @@
     "pg-hstore": "^2.3.4",
     "pino": "^6.11.3",
     "sequelize": "^6.9.0",
-    "umzug": "^2.3.0"
+    "umzug": "^2.3.0",
+    "helmet": "^4.6.0",
+    "swagger-ui-express": "^4.1.6"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
