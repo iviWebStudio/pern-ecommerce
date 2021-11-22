@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "concurrently": "^6.3.0",
+    "helmet": "^4.6.0",
     "nodemon": "^2.0.15"
   },
   "scripts": {
