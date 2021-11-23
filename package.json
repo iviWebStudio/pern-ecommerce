@@ -8,7 +8,7 @@
     "nodemon": "^2.0.15"
   },
   "scripts": {
-    "start": "node server",
+    "start": "npm run dev",
     "server": "nodemon server",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
