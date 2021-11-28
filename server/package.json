@@ -36,8 +36,8 @@
   },
   "description": "Application client/front side with node.js + postgresql",
   "engines": {
-    "node": "14.x",
-    "npm": "6.14.7"
+    "node": "12.x",
+    "npm": "8.1.x"
   },
   "author": {
     "name": "Martin Mkrtchyan",
